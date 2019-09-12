@@ -1,0 +1,10 @@
+5
+127.0.0.1:2250
+127.0.0.1:5550
+127.0.0.1:5560
+127.0.0.1:5570
+127.0.0.1:5580
+max_num_threads 50
+election_timeout 1000
+rpc_timeout 3000
+heartbeat_interval 18

@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package grpc.chord;
+
+service ChordServerStore {
+    rpc GetSuccessor(IdInfo) returns (NodeInfo) {} // Get Successor info for the key.
+    rpc NotifyAndGetData(NodeInfo) returns (DataList) {}// nofity as predecessor, and data redistribution.
+    rpc GetPredecessor(Ping) returns (NodeInfo) {} // Get predecessor of current called node.
+    rpc IsAlive(Ping) returns (Status) {}
+    rpc JoinRing(NodeInfo) returns (MigrationData) {}
+    rpc LeaveRing(Ping) returns (MigrationData) {} // leave ring, redistribute data to successor.
+    rpc NotifyLeaveToPredecessor(NodeInfo) returns (Pong) {} // NodeInfo: my sucessor
+    rpc NotifyLeaveToSuccessor(NotifyLeaveData) returns (Pong) {} //
+    rpc PutData(Data) returns (RetCode) {} // issued by client putting data.
+    rpc PutDataList(DataList) returns (RetCode) {} // putting a list of data
+}
+
+message RetCode {
+	bool isSuccess = 1;
+}
+
+message Status {
+    bool isAlive = 1;
+}
+
+message IdInfo {
+	  int64 id = 1; 
+}
+
+message NodeInfo {
+    string ip = 1;
+    int32 port = 2;
+    int64 id = 3;
+    int32 pathLength = 4;
+}
+
+message Data {
+		int64 id = 1;
+		string data = 2;
+}
+
+message DataList {
+    repeated Data dataList = 1;
+}
+
+message NotifyLeaveData {
+    DataList dataList = 1;
+    NodeInfo predecessor = 2;
+}
+
+message MigrationData {
+	  DataList dataList = 1;
+    NodeInfo successor = 2;
+}
+
+message Ping {
+
+}
+
+message Pong {
+
+}
+
+
+
+
+

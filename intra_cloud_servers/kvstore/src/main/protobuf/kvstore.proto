@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package kvstore;
+
+service KeyValueStore {
+    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Put(PutRequest) returns (PutResponse) {}
+    rpc Broadcast(BroadcastRequest) returns (PutResponse) {}
+    rpc AppendEntries(AppendRequest) returns (AppendResponse) {}
+    rpc RequestVote(VoteRequest) returns (VoteResponse) {}
+    rpc GetServerState(EmptyRequest) returns (StateResponse) {}
+}
+
+// You'll likely need to define more specific return codes than these!
+enum ReturnCode {
+    SUCCESS = 0;
+    FAILURE = 1;
+}
+
+message GetRequest {
+    string key = 1;
+}
+
+message GetResponse {
+    string value = 1;
+    ReturnCode ret = 2;
+}
+
+message PutRequest {
+    string key = 1;
+    string value = 2;
+    int32 serverIndex = 3;
+}
+
+message PutResponse {
+    ReturnCode ret = 1;
+}
+
+message BroadcastRequest {
+    string key = 1;
+    string value = 2;
+    int32 row = 3;
+}
+
+message Log {
+    PutRequest putReq = 1;
+    int32 term = 2;
+}
+
+message AppendRequest {
+    int32 term = 1;
+    int32 leaderId = 2;
+    int32 prevLogIndex = 3;
+    int32 prevLogTerm = 4;
+    Log entries = 5;
+    int32 leaderCommit = 6;
+    bool isHeartbeat = 7;
+}
+
+message AppendResponse {
+    int32 term = 1;
+    bool success = 2;
+}
+
+message VoteRequest {
+    int32 term = 1;
+    int32 candidateId = 2;
+    int32 lastLogIndex = 3;
+    int32 lastLogTerm = 4;
+}
+
+message VoteResponse {
+    int32 term = 1;
+    bool voteGranted = 2;
+}
+
+message StateResponse {
+    int32 term = 1;
+    int32 voteFor = 2;
+    int32 logLength = 3;
+    int32 role = 4;
+    int32 commitIndex = 5;
+    int32 lastApplied = 6;
+    int32 serverId = 7;
+    int32 leaderId = 8;
+
+}
+
+message EmptyRequest {
+
+}

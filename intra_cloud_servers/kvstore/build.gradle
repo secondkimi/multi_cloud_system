@@ -1,0 +1,121 @@
+buildscript {
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'com.google.protobuf' version "0.8.8"
+    id 'idea'
+//    id 'application'
+    id 'groovy'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
+}
+
+group 'apps.raft.kvstore'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+def grpcVersion = '1.21.0-SNAPSHOT' // CURRENT_GRPC_VERSION
+def protobufVersion = '3.7.1'
+def protocVersion = protobufVersion
+
+apply plugin: 'com.google.protobuf'
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'src'
+            srcDirs 'src/main/java'
+        }
+        proto {
+            srcDirs 'src/main/protobuf'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+protobuf {
+    protoc {
+        // The version of protoc must match protobuf-java. If you don't depend on
+        // protobuf-java directly, you will be transitively depending on the
+        // protobuf-java version that grpc depends on.
+        artifact = "com.google.protobuf:protoc:3.6.0"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.12.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+
+    clean {
+        delete "$projectDir/src/generated"
+    }
+
+
+}
+
+sourceSets.main.java.srcDirs = ['src/main/java']
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile 'com.google.protobuf:protobuf-java:3.3.0'
+    compile group: 'io.grpc', name: 'grpc-stub', version: '1.6.1'
+    compile group: 'io.grpc', name: 'grpc-protobuf', version: '1.6.1'
+    compile 'io.grpc:grpc-all:1.12.0'
+    compile group: 'io.grpc', name: 'grpc-netty', version: '1.6.1'
+//    compile group: 'io.netty', name: 'netty-tcnative', version: '2.0.6.Final'
+    // https://mvnrepository.com/artifact/io.netty/netty-all
+//    compile group: 'io.netty', name: 'netty-all', version: '2.0.6.Final'
+//    compile group: 'io.netty', name: 'netty-tcnative-boringssl-static', version: '1.1.33.Fork14'
+
+}
+
+idea {
+    module {
+        sourceDirs += file("${projectDir}/src/generated/main/java");
+        sourceDirs += file("${projectDir}/src/generated/main/grpc");
+    }
+}
+
+shadowJar {
+    manifest {
+        attributes 'Implementation-Title': 'apps-raft',
+                'Implementation-Version': version,
+                'Main-Class': 'apps.raft.kvstore.KvServer'
+    }
+    baseName = "kvServer"
+    configurations = [project.configurations.compile, project.configurations.runtime]
+}
+
+task clientJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    group = "shadow"
+    baseName = "kvClient"
+    description = "Builds a Bitsquare bootstrap node executable jar"
+    manifest.attributes 'Main-Class': 'apps.raft.kvstore.KvClient'
+    from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
+    configurations = [project.configurations.runtime]
+    exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+}
+
+
+task chaosJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    group = "shadow"
+    baseName = "chaosClient"
+    description = "Builds a Bitsquare bootstrap node executable jar"
+    manifest.attributes 'Main-Class': 'apps.raft.kvstore.ChaosClient'
+    from(project.convention.getPlugin(JavaPluginConvention).sourceSets.main.output)
+    configurations = [project.configurations.runtime]
+    exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+}
+

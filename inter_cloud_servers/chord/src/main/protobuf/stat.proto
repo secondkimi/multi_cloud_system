@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package grpc.chord;
+
+service StatStore {
+    rpc NotifyAddKey(AddKeyInfo) returns (SimpleResponse) {}
+    rpc UpdateNodeInfo(NodeStatInfo) returns (SimpleResponse) {}
+    rpc GetStatics(Ping1) returns (StaticsResult) {}
+    rpc NotifyAddListOfKeys(PathLengthList) returns (SimpleResponse) {}
+}
+
+message AddKeyInfo {
+    int32 pathLength = 1;
+    int64 id = 2;
+}
+
+enum ReturnCode {
+    SUCCESS = 0;
+    FAILURE = 1;
+}
+
+message SimpleResponse {
+    ReturnCode ret = 1;
+}
+
+message NodeStatInfo {
+    int64 id = 1;
+    int32 numOfKeys = 2;
+}
+
+message PathLengthInfo {
+    int32 pathLength = 1;
+    int32 pathCount = 2;
+}
+
+message Ping1 {
+
+}
+
+message PathLengthList {
+    repeated PathLengthInfo pathLengthInfo = 1;
+}
+
+message StaticsResult {
+    repeated NodeStatInfo nodeInfos = 1;
+    repeated PathLengthInfo lengthInfos = 2;
+}
